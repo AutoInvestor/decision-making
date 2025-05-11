@@ -2,7 +2,6 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'com.diffplug.spotless' version '6.18.0'
 }
 
 group = 'io.autoinvestor'
@@ -27,20 +26,13 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-spotless {
-	java {
-		googleJavaFormat('1.25.0')
-		eclipse().configFile 'config/eclipse-java-formatter.xml'
-	}
-}
-
 bootBuildImage {
-	imageName = "${System.getenv("DOCKER_USERNAME")}/autoinvestor-${rootProject.name}:${System.getenv("DOCKER_IMAGE_VERSION")}"
+	imageName = "${System.getenv("DOCKER_NAMESPACE")}/autoinvestor-${rootProject.name}:${System.getenv("DOCKER_IMAGE_VERSION")}"
 	docker {
 		publishRegistry {
 			username = System.getenv("DOCKER_USERNAME")
 			password = System.getenv("DOCKER_PASSWORD")
-			url = "https://index.docker.io/v1/"
+			url = System.getenv("DOCKER_REGISTRY")
 		}
 	}
 	publish = true
