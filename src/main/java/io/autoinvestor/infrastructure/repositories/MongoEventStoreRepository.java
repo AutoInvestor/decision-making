@@ -4,6 +4,7 @@ import io.autoinvestor.domain.events.Event;
 import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Decision;
 import io.autoinvestor.domain.model.DecisionId;
+import lombok.SneakyThrows;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -37,6 +38,7 @@ public class MongoEventStoreRepository  implements EventStoreRepository {
         template.insertAll(eventDocuments);
     }
 
+    @SneakyThrows
     @Override
     public Decision get(DecisionId decisionId) {
         Query q = Query.query(Criteria.where("aggregateId").is(decisionId))
