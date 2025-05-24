@@ -4,7 +4,6 @@ import io.autoinvestor.domain.events.Event;
 import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Decision;
 import io.autoinvestor.domain.model.DecisionId;
-import lombok.SneakyThrows;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,10 +14,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Repository
 @Profile("prod")
-public class MongoEventStoreRepository  implements EventStoreRepository {
+public class MongoEventStoreRepository implements EventStoreRepository {
     private static final String COLLECTION = "events";
 
     private final MongoTemplate template;
@@ -31,17 +29,21 @@ public class MongoEventStoreRepository  implements EventStoreRepository {
 
     @Override
     public void save(Decision decision) {
-        List<EventDocument> eventDocuments = decision.getUncommittedEvents()
+        List<EventDocument> docs = decision.getUncommittedEvents()
                 .stream()
                 .map(mapper::toDocument)
                 .collect(Collectors.toList());
-        template.insertAll(eventDocuments);
+        template.insertAll(docs);
     }
 
     @Override
     public Decision get(DecisionId decisionId) {
-        Query q = Query.query(Criteria.where("aggregateId").is(decisionId))
+        Query q = Query.query(
+                        Criteria.where("aggregateId")
+                                .is(decisionId.toString())
+                )
                 .with(Sort.by("version"));
+
         List<EventDocument> docs = template.find(q, EventDocument.class, COLLECTION);
 
         if (docs.isEmpty()) {
