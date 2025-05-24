@@ -1,13 +1,16 @@
-package io.autoinvestor.infrastructure;
+package io.autoinvestor.infrastructure.event_publishers;
 
-import io.autoinvestor.domain.Event;
-import io.autoinvestor.domain.EventPublisher;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.autoinvestor.domain.events.Event;
+import io.autoinvestor.domain.events.EventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("local")
 public class InMemoryEventPublisher implements EventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;

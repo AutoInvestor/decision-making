@@ -1,4 +1,7 @@
-package io.autoinvestor.domain;
+package io.autoinvestor.domain.events;
+
+
+import io.autoinvestor.domain.Id;
 
 public class EventId extends Id {
     EventId(String id) {
@@ -7,5 +10,9 @@ public class EventId extends Id {
 
     public static EventId generate() {
         return new EventId(generateId());
+    }
+
+    public static EventId of(String id) {
+        return new EventId(id);
     }
 }
