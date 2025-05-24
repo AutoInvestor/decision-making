@@ -27,22 +27,26 @@ public class EventMapper {
         );
     }
 
-    public Event<?> toDomain(EventDocument doc) throws JsonProcessingException {
-        EventId id         = EventId.of(doc.getId());
-        DecisionId aggId   = DecisionId.from(doc.getAggregateId());
-        Date occurredAt    = doc.getOccurredAt();
-        int version        = doc.getVersion();
+    public Event<?> toDomain(EventDocument doc) {
+        try {
+            EventId id         = EventId.of(doc.getId());
+            DecisionId aggId   = DecisionId.from(doc.getAggregateId());
+            Date occurredAt    = doc.getOccurredAt();
+            int version        = doc.getVersion();
 
-        switch (doc.getType()) {
-            case DecisionTakenEvent.TYPE -> {
-                DecisionTakenEventPayload payload =
-                        json.treeToValue(doc.getPayload(), DecisionTakenEventPayload.class);
+            switch (doc.getType()) {
+                case DecisionTakenEvent.TYPE -> {
+                    DecisionTakenEventPayload payload =
+                            json.treeToValue(doc.getPayload(), DecisionTakenEventPayload.class);
 
-                return DecisionTakenEvent.hydrate(id, aggId, payload, occurredAt, version);
+                    return DecisionTakenEvent.hydrate(id, aggId, payload, occurredAt, version);
+                }
+
+                default -> throw new IllegalArgumentException(
+                        "Unknown event type: " + doc.getType());
             }
-
-            default -> throw new IllegalArgumentException(
-                    "Unknown event type: " + doc.getType());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse event payload", e);
         }
     }
 }

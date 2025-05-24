@@ -38,7 +38,6 @@ public class MongoEventStoreRepository  implements EventStoreRepository {
         template.insertAll(eventDocuments);
     }
 
-    @SneakyThrows
     @Override
     public Decision get(DecisionId decisionId) {
         Query q = Query.query(Criteria.where("aggregateId").is(decisionId))
