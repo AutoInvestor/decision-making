@@ -4,9 +4,11 @@ import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Decision;
 import io.autoinvestor.domain.model.DecisionId;
 import io.autoinvestor.domain.model.RiskLevel;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
 public class RegisterDecisionCommandHandler {
 
     private final EventStoreRepository eventStore;
