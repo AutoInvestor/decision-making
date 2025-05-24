@@ -1,6 +1,7 @@
 package io.autoinvestor.infrastructure.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.autoinvestor.domain.events.*;
 import io.autoinvestor.domain.model.DecisionId;
@@ -15,50 +16,33 @@ public class EventMapper {
     private final ObjectMapper json = new ObjectMapper();
 
     public <P extends EventPayload> EventDocument toDocument(Event<P> evt) {
-        try {
-            String payloadJson = json.writeValueAsString(evt.getPayload());
-            return new EventDocument(
-                    evt.getId().toString(),
-                    evt.getAggregateId().toString(),
-                    evt.getType(),
-                    payloadJson,
-                    evt.getOccurredAt(),
-                    evt.getVersion()
-            );
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize event payload", e);
-        }
+        JsonNode payloadNode = json.valueToTree(evt.getPayload());
+        return new EventDocument(
+                evt.getId().toString(),
+                evt.getAggregateId().toString(),
+                evt.getType(),
+                payloadNode,          //  JsonNode, not String
+                evt.getOccurredAt(),
+                evt.getVersion()
+        );
     }
 
-    public Event<?> toDomain(EventDocument doc) {
-        try {
-            EventId id = EventId.of(doc.getId());
-            DecisionId aggregateId = DecisionId.from(doc.getAggregateId());
-            Date occurredAt  = doc.getOccurredAt();
-            int version = doc.getVersion();
+    public Event<?> toDomain(EventDocument doc) throws JsonProcessingException {
+        EventId id         = EventId.of(doc.getId());
+        DecisionId aggId   = DecisionId.from(doc.getAggregateId());
+        Date occurredAt    = doc.getOccurredAt();
+        int version        = doc.getVersion();
 
-            switch (doc.getType()) {
-                case DecisionTakenEvent.TYPE:
-                    DecisionTakenEventPayload payload =
-                            json.readValue(
-                                    doc.getPayload(),
-                                    DecisionTakenEventPayload.class
-                            );
+        switch (doc.getType()) {
+            case DecisionTakenEvent.TYPE -> {
+                DecisionTakenEventPayload payload =
+                        json.treeToValue(doc.getPayload(), DecisionTakenEventPayload.class);
 
-                    return DecisionTakenEvent.hydrate(
-                            id,
-                            aggregateId,
-                            payload,
-                            occurredAt,
-                            version
-                    );
-                default:
-                    throw new IllegalArgumentException(
-                            "Unknown event type: " + doc.getType()
-                    );
+                return DecisionTakenEvent.hydrate(id, aggId, payload, occurredAt, version);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse event payload", e);
+
+            default -> throw new IllegalArgumentException(
+                    "Unknown event type: " + doc.getType());
         }
     }
 }

@@ -1,5 +1,7 @@
 package io.autoinvestor.infrastructure.read_models;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
@@ -7,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
+@Setter
+@Getter
 @Document(collection = "decisions")
 @CompoundIndexes({
         @CompoundIndex(name = "assetId_riskLevel_idx",
@@ -38,17 +42,4 @@ public class DecisionDocument {
         this.riskLevel = riskLevel;
     }
 
-    public String getId()        { return id; }
-    public String getDecisionId() { return decisionId; }
-    public String getAssetId()   { return assetId; }
-    public Date   getDate()      { return date; }
-    public String getType()      { return type; }
-    public int    getRiskLevel() { return riskLevel; }
-
-    public void setId(String id)               { this.id = id; }
-    public void setDecisionId(String decisionId) { this.decisionId = decisionId; }
-    public void setAssetId(String assetId)     { this.assetId = assetId; }
-    public void setDate(Date date)             { this.date = date; }
-    public void setType(String type)           { this.type = type; }
-    public void setRiskLevel(int riskLevel)    { this.riskLevel = riskLevel; }
 }
