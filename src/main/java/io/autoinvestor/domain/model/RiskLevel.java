@@ -1,6 +1,8 @@
 package io.autoinvestor.domain.model;
 
-public record RiskLevel(int value) {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public record RiskLevel(@JsonValue int value) {
     public static final RiskLevel R1 = new RiskLevel(1);
     public static final RiskLevel R2 = new RiskLevel(2);
     public static final RiskLevel R3 = new RiskLevel(3);
