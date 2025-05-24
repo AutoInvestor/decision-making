@@ -44,39 +44,53 @@ public class PubsubNewsEventSubscriber {
 
     @PostConstruct
     public void listen() {
+        log.info("Starting Pub/Sub subscriber for {}", subscriptionName);
+
         MessageReceiver receiver = this::processMessage;
 
         this.subscriber = Subscriber.newBuilder(subscriptionName, receiver).build();
         this.subscriber.addListener(new Listener() {
-            @Override public void failed(State from, Throwable failure) {}
+            @Override public void failed(State from, Throwable failure) {
+                log.error("Subscriber failed from state {}: {}", from, failure.toString(), failure); // ERROR
+            }
         }, Runnable::run);
         subscriber.startAsync().awaitRunning();
+        log.info("Subscriber running");
     }
 
     @PreDestroy
     public void stop() {
         if (subscriber != null) {
+            log.info("Stopping subscriber...");
             subscriber.stopAsync();
         }
     }
 
     private void processMessage(PubsubMessage message, AckReplyConsumer consumer) {
-        try {
-            Map<String, Object> raw = this.objectMapper.readValue(
-                    message.getData().toByteArray(), new TypeReference<>() {});
+        String msgId = message.getMessageId();
+        log.debug("Received message msgId={} size={}B", msgId, message.getData().size()); // DEBUG
 
-            PubsubEvent event = this.eventMapper.fromMap(raw);
+        try {
+            // parse & map
+            Map<String,Object> raw = objectMapper.readValue(message.getData().toByteArray(), new TypeReference<>() {});
+            PubsubEvent event = eventMapper.fromMap(raw);
+            log.info("Processing event type={} msgId={}", event.getType(), msgId);        // INFO
 
             if ("ASSET_FEELING_DETECTED".equals(event.getType())) {
                 RegisterDecisionCommand cmd = new RegisterDecisionCommand(
                         (String) event.getPayload().get("assetId"),
                         (int) event.getPayload().get("feeling")
                 );
-                this.commandHandler.handle(cmd);
+                commandHandler.handle(cmd);
+                log.info("Decision registered for asset={} feeling={} msgId={}",
+                        cmd.assetId(), cmd.feeling(), msgId);                            // INFO
+            } else {
+                log.debug("Ignored unsupported event type={} msgId={}", event.getType(), msgId);
             }
 
             consumer.ack();
         } catch (Exception ex) {
+            log.error("Failed to handle msgId={} — nacking", msgId, ex);                  // ERROR
             consumer.nack();
         }
     }
