@@ -1,4 +1,4 @@
-package io.autoinvestor.domain;
+package io.autoinvestor.domain.events;
 
 import java.util.Map;
 

@@ -24,7 +24,7 @@ public abstract class Id {
             return true;
         if (!(o instanceof Id that))
             return false;
-        return Objects.equals(id, that.id);
+        return id.equals(that.id);
     }
 
     @Override
