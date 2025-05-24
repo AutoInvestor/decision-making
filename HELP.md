@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'io.autoinvestor.type-making' is invalid and this project uses 'io.autoinvestor.decision_making' instead.
+* The original package name 'io.autoinvestor.decision-making' is invalid and this project uses 'io.autoinvestor.decision_making' instead.
 
 # Getting Started
 
