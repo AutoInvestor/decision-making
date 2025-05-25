@@ -27,6 +27,10 @@ public class RegisterDecisionCommandHandler {
                     ? Decision.empty()
                     : this.eventStore.get(DecisionId.from(decisionFromReadModel.get().decisionId()));
 
+            if (decision == null) {
+                throw new IllegalStateException("Decision not found for ID: " + command.assetId() + " when it should be present.");
+            }
+
             decision.takeDecision(
                     command.assetId(),
                     command.feeling(),

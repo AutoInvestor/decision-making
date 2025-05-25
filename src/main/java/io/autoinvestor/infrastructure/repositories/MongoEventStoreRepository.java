@@ -39,7 +39,7 @@ public class MongoEventStoreRepository implements EventStoreRepository {
     @Override
     public Decision get(DecisionId decisionId) {
         Query q = Query.query(
-                        Criteria.where("aggregateId")
+                        Criteria.where("decisionId")
                                 .is(decisionId.toString())
                 )
                 .with(Sort.by("version"));
