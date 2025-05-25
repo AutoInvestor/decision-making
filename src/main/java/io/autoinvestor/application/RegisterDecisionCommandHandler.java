@@ -1,11 +1,14 @@
 package io.autoinvestor.application;
 
+import io.autoinvestor.domain.events.Event;
+import io.autoinvestor.domain.events.EventPublisher;
 import io.autoinvestor.domain.events.EventStoreRepository;
 import io.autoinvestor.domain.model.Decision;
 import io.autoinvestor.domain.model.DecisionId;
 import io.autoinvestor.domain.model.RiskLevel;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,10 +16,12 @@ public class RegisterDecisionCommandHandler {
 
     private final EventStoreRepository eventStore;
     private final ReadModelRepository readModel;
+    private final EventPublisher eventPublisher;
 
-    public RegisterDecisionCommandHandler(EventStoreRepository eventStore, ReadModelRepository readModel) {
+    public RegisterDecisionCommandHandler(EventStoreRepository eventStore, ReadModelRepository readModel, EventPublisher eventPublisher) {
         this.eventStore = eventStore;
         this.readModel = readModel;
+        this.eventPublisher = eventPublisher;
     }
 
     public void handle(RegisterDecisionCommand command) {
@@ -37,6 +42,8 @@ public class RegisterDecisionCommandHandler {
                     risklevel
             );
 
+            List<Event<?>> events = decision.getUncommittedEvents();
+
             this.eventStore.save(decision);
 
             DecisionDTO dto = new DecisionDTO(
@@ -47,6 +54,8 @@ public class RegisterDecisionCommandHandler {
                     risklevel.value()
             );
             this.readModel.save(dto);
+
+            this.eventPublisher.publish(events);
 
             decision.markEventsAsCommitted();
         }
