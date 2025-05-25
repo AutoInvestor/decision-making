@@ -82,9 +82,28 @@ public class PubsubNewsEventSubscriber {
                     return;
                 }
 
+                Object rawFeeling = event.getPayload().get("feeling");
+                int feeling;
+                if (rawFeeling instanceof Number) {
+                    feeling = ((Number) rawFeeling).intValue();
+                } else if (rawFeeling instanceof String) {
+                    try {
+                        feeling = Integer.parseInt((String) rawFeeling);
+                    } catch (NumberFormatException ex) {
+                        log.warn("Malformed feeling value; ignoring msgId={}", msgId);
+                        consumer.ack();
+                        return;
+                    }
+                } else {
+                    log.warn("Unexpected feeling type {}; ignoring msgId={}",
+                            rawFeeling == null ? "null" : rawFeeling.getClass(), msgId);
+                    consumer.ack();
+                    return;
+                }
+
                 RegisterDecisionCommand cmd = new RegisterDecisionCommand(
                         (String) event.getPayload().get("assetId"),
-                        (int) event.getPayload().get("feeling")
+                        feeling
                 );
                 commandHandler.handle(cmd);
                 log.info("Decision registered for asset={} feeling={} msgId={}",
