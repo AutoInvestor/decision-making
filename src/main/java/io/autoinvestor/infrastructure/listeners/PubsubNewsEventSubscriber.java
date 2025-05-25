@@ -68,29 +68,34 @@ public class PubsubNewsEventSubscriber {
 
     private void processMessage(PubsubMessage message, AckReplyConsumer consumer) {
         String msgId = message.getMessageId();
-        log.debug("Received message msgId={} size={}B", msgId, message.getData().size()); // DEBUG
+        log.debug("Received message msgId={} size={}B", msgId, message.getData().size());
 
         try {
-            // parse & map
             Map<String,Object> raw = objectMapper.readValue(message.getData().toByteArray(), new TypeReference<>() {});
             PubsubEvent event = eventMapper.fromMap(raw);
-            log.info("Processing event type={} msgId={}", event.getType(), msgId);        // INFO
+            log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
             if ("ASSET_FEELING_DETECTED".equals(event.getType())) {
+                if (event.getPayload() == null || !event.getPayload().containsKey("assetId") || !event.getPayload().containsKey("feeling")) {
+                    log.warn("Event payload missing assetId or feeling, ignoring msgId={}", msgId);
+                    consumer.ack();
+                    return;
+                }
+
                 RegisterDecisionCommand cmd = new RegisterDecisionCommand(
                         (String) event.getPayload().get("assetId"),
                         (int) event.getPayload().get("feeling")
                 );
                 commandHandler.handle(cmd);
                 log.info("Decision registered for asset={} feeling={} msgId={}",
-                        cmd.assetId(), cmd.feeling(), msgId);                            // INFO
+                        cmd.assetId(), cmd.feeling(), msgId);
             } else {
                 log.debug("Ignored unsupported event type={} msgId={}", event.getType(), msgId);
             }
 
             consumer.ack();
         } catch (Exception ex) {
-            log.error("Failed to handle msgId={} — nacking", msgId, ex);                  // ERROR
+            log.error("Failed to handle msgId={} — nacking", msgId, ex);
             consumer.nack();
         }
     }
