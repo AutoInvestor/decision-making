@@ -1,9 +1,11 @@
 package io.autoinvestor.domain.events;
 
 import io.autoinvestor.domain.Id;
+import lombok.Getter;
 
 import java.util.Date;
 
+@Getter
 public abstract class Event<P extends EventPayload> {
     private final EventId id;
     private final Id aggregateId;
@@ -32,29 +34,5 @@ public abstract class Event<P extends EventPayload> {
         this.payload = payload;
         this.occurredAt = occurredAt;
         this.version = version;
-    }
-
-    public EventId getId() {
-        return id;
-    }
-
-    public Id getAggregateId() {
-        return aggregateId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public P getPayload() {
-        return payload;
-    }
-
-    public Date getOccurredAt() {
-        return occurredAt;
-    }
-
-    public int getVersion() {
-        return version;
     }
 }

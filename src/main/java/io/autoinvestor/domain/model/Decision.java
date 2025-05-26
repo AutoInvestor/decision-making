@@ -52,6 +52,9 @@ public class Decision extends EventSourcedEntity {
     }
 
     private void whenDecisionTaken(DecisionTakenEvent event) {
+        if (this.state == null) {
+            this.state = DecisionState.empty();
+        }
         this.state = this.state.withDecisionTaken(event);
     }
 
