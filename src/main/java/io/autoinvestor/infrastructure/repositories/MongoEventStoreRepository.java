@@ -40,7 +40,7 @@ public class MongoEventStoreRepository implements EventStoreRepository {
     public Decision get(DecisionId decisionId) {
         Query q = Query.query(
                         Criteria.where("aggregateId")
-                                .is(decisionId.toString())
+                                .is(decisionId.value())
                 )
                 .with(Sort.by("version"));
 
