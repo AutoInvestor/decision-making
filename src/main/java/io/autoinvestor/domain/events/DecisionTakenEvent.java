@@ -10,8 +10,8 @@ public class DecisionTakenEvent extends Event<DecisionTakenEventPayload> {
 
     public static final String TYPE = "ASSET_DECISION_TAKEN";
 
-    private DecisionTakenEvent(Id aggregateId, DecisionTakenEventPayload payload) {
-        super(aggregateId, TYPE, payload);
+    private DecisionTakenEvent(Id aggregateId, DecisionTakenEventPayload payload, int version) {
+        super(aggregateId, TYPE, payload, version);
     }
 
     protected DecisionTakenEvent(EventId id,
@@ -22,14 +22,15 @@ public class DecisionTakenEvent extends Event<DecisionTakenEventPayload> {
         super(id, decisionId, TYPE, payload, occurredAt, version);
     }
 
-    public static DecisionTakenEvent with(DecisionId decisionId, AssetId assetId, Date date, Type type, RiskLevel riskLevel) {
+    public static DecisionTakenEvent with(DecisionId decisionId, AssetId assetId, Date date, Type type,
+                                          RiskLevel riskLevel, int version) {
         DecisionTakenEventPayload payload = new DecisionTakenEventPayload(
                 assetId.value(),
                 date,
                 type.name(),
                 riskLevel.value()
         );
-        return new DecisionTakenEvent(decisionId, payload);
+        return new DecisionTakenEvent(decisionId, payload, version);
     }
 
     public static DecisionTakenEvent hydrate(EventId id,

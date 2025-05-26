@@ -36,7 +36,8 @@ public class Decision extends EventSourcedEntity {
                 AssetId.of(assetId),
                 new Date(),
                 type,
-                riskLevel
+                riskLevel,
+                this.version
         ));
     }
 
