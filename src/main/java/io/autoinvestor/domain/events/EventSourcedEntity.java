@@ -5,7 +5,7 @@ import java.util.List;
 
 public abstract class EventSourcedEntity {
     private final List<Event<?>> appliedEvents = new ArrayList<>();
-    private int version;
+    protected int version;
 
     protected EventSourcedEntity(List<Event<?>> stream) {
         if (!stream.isEmpty()) {
@@ -16,10 +16,6 @@ public abstract class EventSourcedEntity {
         } else {
             version = 0;
         }
-    }
-
-    protected EventSourcedEntity() {
-        this(null);
     }
 
     protected void apply(Event<?> e) {
