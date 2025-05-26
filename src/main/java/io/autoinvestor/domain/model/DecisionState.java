@@ -61,7 +61,7 @@ public class DecisionState {
 
     public DecisionState withDecisionTaken(DecisionTakenEvent event) {
         return new DecisionState(
-                DecisionId.from(event.getId().value()),
+                DecisionId.from(event.getAggregateId().value()),
                 AssetId.of(event.getPayload().assetId()),
                 event.getPayload().date(),
                 Type.from(event.getPayload().decision()),
