@@ -45,12 +45,7 @@ public class PubsubEventPublisher implements EventPublisher {
 
         events.stream()
                 .map(mapper::toMessage)
-                .forEach(msg -> {
-                    publisher.publish(msg).addListener(
-                            () -> log.debug("Published msgId={}", msg.getMessageId()),
-                            Runnable::run
-                    );
-                });
+                .forEach(publisher::publish);
     }
 
     @PreDestroy
