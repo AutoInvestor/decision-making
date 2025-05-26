@@ -23,19 +23,18 @@ final class EventMessageMapper {
     PubsubMessage toMessage(Event<?> event) {
         try {
             Map<String, Object> envelope = new HashMap<>();
-            envelope.put("payload",     event.getPayload().asMap());
-            envelope.put("eventId",     event.getId().value());
-            envelope.put("type",        event.getType());
+            envelope.put("payload", event.getPayload().asMap());
+            envelope.put("eventId", event.getId().value());
+            envelope.put("type", event.getType());
             envelope.put("aggregateId", event.getAggregateId().value());
             envelope.put("occurredAt",
                     Instant.ofEpochMilli(event.getOccurredAt().getTime()).toString());
-            envelope.put("version",     event.getVersion());
+            envelope.put("version", event.getVersion());
 
             String json = objectMapper.writeValueAsString(envelope);
             return PubsubMessage.newBuilder()
                     .setData(ByteString.copyFromUtf8(json))
                     .build();
-
         } catch (JsonProcessingException ex) {
             throw new InternalErrorException("Failed to serialise domain event");
         }
