@@ -76,12 +76,6 @@ public class PubsubNewsEventSubscriber {
             log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
             if ("ASSET_FEELING_DETECTED".equals(event.getType())) {
-                if (event.getPayload() == null || !event.getPayload().containsKey("assetId") || !event.getPayload().containsKey("feeling")) {
-                    log.warn("Event payload missing assetId or feeling, ignoring msgId={}", msgId);
-                    consumer.ack();
-                    return;
-                }
-
                 Object rawFeeling = event.getPayload().get("feeling");
                 int feeling;
                 if (rawFeeling instanceof Number) {
