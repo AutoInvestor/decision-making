@@ -24,6 +24,6 @@ public record RiskLevel(@JsonValue int value) {
     }
 
     public static RiskLevel[] values() {
-        return new RiskLevel[] { R1, R2, R3, R4 };
+        return new RiskLevel[] {R1, R2, R3, R4};
     }
 }

@@ -1,5 +1,17 @@
 package io.autoinvestor.infrastructure.listeners;
 
+import io.autoinvestor.application.RegisterDecisionCommand;
+import io.autoinvestor.application.RegisterDecisionCommandHandler;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiService.Listener;
@@ -9,16 +21,6 @@ import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
-import io.autoinvestor.application.RegisterDecisionCommand;
-import io.autoinvestor.application.RegisterDecisionCommandHandler;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -37,8 +39,8 @@ public class PubsubNewsEventSubscriber {
             PubsubEventMapper eventMapper,
             @Value("${GCP_PROJECT}") String projectId,
             @Value("${PUBSUB_SUBSCRIPTION_MARKET_FEELING}") String subscriptionId) {
-        this.commandHandler   = commandHandler;
-        this.eventMapper      = eventMapper;
+        this.commandHandler = commandHandler;
+        this.eventMapper = eventMapper;
         this.subscriptionName = ProjectSubscriptionName.of(projectId, subscriptionId);
     }
 
@@ -49,11 +51,18 @@ public class PubsubNewsEventSubscriber {
         MessageReceiver receiver = this::processMessage;
 
         this.subscriber = Subscriber.newBuilder(subscriptionName, receiver).build();
-        this.subscriber.addListener(new Listener() {
-            @Override public void failed(State from, Throwable failure) {
-                log.error("Subscriber failed from state {}: {}", from, failure.toString(), failure); // ERROR
-            }
-        }, Runnable::run);
+        this.subscriber.addListener(
+                new Listener() {
+                    @Override
+                    public void failed(State from, Throwable failure) {
+                        log.error(
+                                "Subscriber failed from state {}: {}",
+                                from,
+                                failure.toString(),
+                                failure); // ERROR
+                    }
+                },
+                Runnable::run);
         subscriber.startAsync().awaitRunning();
         log.info("Subscriber running");
     }
@@ -71,7 +80,9 @@ public class PubsubNewsEventSubscriber {
         log.debug("Received message msgId={} size={}B", msgId, message.getData().size());
 
         try {
-            Map<String,Object> raw = objectMapper.readValue(message.getData().toByteArray(), new TypeReference<>() {});
+            Map<String, Object> raw =
+                    objectMapper.readValue(
+                            message.getData().toByteArray(), new TypeReference<>() {});
             PubsubEvent event = eventMapper.fromMap(raw);
             log.info("Processing event type={} msgId={}", event.getType(), msgId);
 
@@ -89,19 +100,23 @@ public class PubsubNewsEventSubscriber {
                         return;
                     }
                 } else {
-                    log.warn("Unexpected feeling type {}; ignoring msgId={}",
-                            rawFeeling == null ? "null" : rawFeeling.getClass(), msgId);
+                    log.warn(
+                            "Unexpected feeling type {}; ignoring msgId={}",
+                            rawFeeling == null ? "null" : rawFeeling.getClass(),
+                            msgId);
                     consumer.ack();
                     return;
                 }
 
-                RegisterDecisionCommand cmd = new RegisterDecisionCommand(
-                        (String) event.getPayload().get("assetId"),
-                        feeling
-                );
+                RegisterDecisionCommand cmd =
+                        new RegisterDecisionCommand(
+                                (String) event.getPayload().get("assetId"), feeling);
                 commandHandler.handle(cmd);
-                log.info("Decision registered for asset={} feeling={} msgId={}",
-                        cmd.assetId(), cmd.feeling(), msgId);
+                log.info(
+                        "Decision registered for asset={} feeling={} msgId={}",
+                        cmd.assetId(),
+                        cmd.feeling(),
+                        msgId);
             } else {
                 log.debug("Ignored unsupported event type={} msgId={}", event.getType(), msgId);
             }

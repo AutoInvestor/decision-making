@@ -31,5 +31,4 @@ public enum Type {
 
         return HOLD;
     }
-
 }
