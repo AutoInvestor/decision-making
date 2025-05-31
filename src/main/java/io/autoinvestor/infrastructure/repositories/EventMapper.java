@@ -1,13 +1,15 @@
 package io.autoinvestor.infrastructure.repositories;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.autoinvestor.domain.events.*;
 import io.autoinvestor.domain.model.DecisionId;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class EventMapper {
@@ -24,15 +26,14 @@ public class EventMapper {
                 evt.getType(),
                 payloadMap,
                 evt.getOccurredAt(),
-                evt.getVersion()
-        );
+                evt.getVersion());
     }
 
     public Event<?> toDomain(EventDocument doc) {
-        EventId    id        = EventId.of(doc.getId());
-        DecisionId aggId     = DecisionId.from(doc.getAggregateId());
-        Date       occurred  = doc.getOccurredAt();
-        int        version   = doc.getVersion();
+        EventId id = EventId.of(doc.getId());
+        DecisionId aggId = DecisionId.from(doc.getAggregateId());
+        Date occurred = doc.getOccurredAt();
+        int version = doc.getVersion();
 
         switch (doc.getType()) {
             case DecisionTakenEvent.TYPE -> {
@@ -42,9 +43,7 @@ public class EventMapper {
                 return DecisionTakenEvent.hydrate(id, aggId, payload, occurred, version);
             }
 
-            default -> throw new IllegalArgumentException(
-                    "Unknown event type: " + doc.getType()
-            );
+            default -> throw new IllegalArgumentException("Unknown event type: " + doc.getType());
         }
     }
 }

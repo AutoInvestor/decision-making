@@ -1,18 +1,20 @@
 package io.autoinvestor.infrastructure.event_publishers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.pubsub.v1.ProjectTopicName;
-import com.google.cloud.pubsub.v1.Publisher;
 import io.autoinvestor.domain.events.Event;
 import io.autoinvestor.domain.events.EventPublisher;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.pubsub.v1.Publisher;
+import com.google.pubsub.v1.ProjectTopicName;
 
 @Slf4j
 @Component
@@ -25,8 +27,8 @@ public class PubsubEventPublisher implements EventPublisher {
     public PubsubEventPublisher(
             @Value("${GCP_PROJECT}") String projectId,
             @Value("${PUBSUB_TOPIC}") String topic,
-            ObjectMapper objectMapper
-    ) throws Exception {
+            ObjectMapper objectMapper)
+            throws Exception {
         this.mapper = new EventMessageMapper(objectMapper);
         ProjectTopicName topicName = ProjectTopicName.of(projectId, topic);
         this.publisher = Publisher.newBuilder(topicName).build();
@@ -43,9 +45,7 @@ public class PubsubEventPublisher implements EventPublisher {
 
         log.info("Publishing {} domain event(s)", events.size());
 
-        events.stream()
-                .map(mapper::toMessage)
-                .forEach(publisher::publish);
+        events.stream().map(mapper::toMessage).forEach(publisher::publish);
     }
 
     @PreDestroy

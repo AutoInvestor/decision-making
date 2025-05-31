@@ -2,7 +2,6 @@ package io.autoinvestor.domain.model;
 
 import io.autoinvestor.domain.Id;
 
-
 public class DecisionId extends Id {
     DecisionId(String id) {
         super(id);

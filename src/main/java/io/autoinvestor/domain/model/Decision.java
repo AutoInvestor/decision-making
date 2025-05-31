@@ -31,14 +31,14 @@ public class Decision extends EventSourcedEntity {
         Feeling feeling = Feeling.of(feelingInt);
         Type type = Type.calculateFromFeelingAndRiskLevel(feeling, riskLevel);
 
-        this.apply(DecisionTakenEvent.with(
-                this.state.decisionId(),
-                AssetId.of(assetId),
-                new Date(),
-                type,
-                riskLevel,
-                this.version
-        ));
+        this.apply(
+                DecisionTakenEvent.with(
+                        this.state.decisionId(),
+                        AssetId.of(assetId),
+                        new Date(),
+                        type,
+                        riskLevel,
+                        this.version));
     }
 
     @Override

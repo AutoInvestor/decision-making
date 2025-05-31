@@ -11,8 +11,8 @@ public class DecisionState {
     private final Type type;
     private final RiskLevel riskLevel;
 
-
-    private DecisionState(DecisionId decisionId, AssetId assetId, Date date, Type type, RiskLevel riskLevel) {
+    private DecisionState(
+            DecisionId decisionId, AssetId assetId, Date date, Type type, RiskLevel riskLevel) {
         this.decisionId = decisionId;
         this.assetId = assetId;
         this.date = date;
@@ -21,7 +21,12 @@ public class DecisionState {
     }
 
     public static DecisionState empty() {
-        return new DecisionState(DecisionId.generate(), AssetId.generate(), new Date() ,Type.NONE, RiskLevel.empty());
+        return new DecisionState(
+                DecisionId.generate(),
+                AssetId.generate(),
+                new Date(),
+                Type.NONE,
+                RiskLevel.empty());
     }
 
     public String assetId() {
@@ -53,10 +58,10 @@ public class DecisionState {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         DecisionState that = (DecisionState) obj;
-        return decisionId.equals(that.decisionId) &&
-                assetId.equals(that.assetId) &&
-                type == that.type &&
-                riskLevel.equals(that.riskLevel);
+        return decisionId.equals(that.decisionId)
+                && assetId.equals(that.assetId)
+                && type == that.type
+                && riskLevel.equals(that.riskLevel);
     }
 
     public DecisionState withDecisionTaken(DecisionTakenEvent event) {

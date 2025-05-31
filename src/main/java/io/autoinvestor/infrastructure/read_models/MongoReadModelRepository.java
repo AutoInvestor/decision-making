@@ -2,6 +2,10 @@ package io.autoinvestor.infrastructure.read_models;
 
 import io.autoinvestor.application.DecisionDTO;
 import io.autoinvestor.application.ReadModelRepository;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -9,12 +13,7 @@ import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
-
 
 @Repository
 @Profile("prod")
@@ -30,10 +29,11 @@ public class MongoReadModelRepository implements ReadModelRepository {
         this.mapper = mapper;
 
         IndexOperations indexOps = template.indexOps(COLLECTION);
-        Index compound = new Index()
-                .on("assetId", Sort.Direction.ASC)
-                .on("riskLevel", Sort.Direction.ASC)
-                .named("assetId_riskLevel_idx");
+        Index compound =
+                new Index()
+                        .on("assetId", Sort.Direction.ASC)
+                        .on("riskLevel", Sort.Direction.ASC)
+                        .named("assetId_riskLevel_idx");
         indexOps.ensureIndex(compound);
     }
 
@@ -44,24 +44,18 @@ public class MongoReadModelRepository implements ReadModelRepository {
 
     @Override
     public List<DecisionDTO> get(String assetId, int riskLevel) {
-        Query query = Query.query(
-                Criteria.where("assetId").is(assetId)
-                        .and("riskLevel").is(riskLevel)
-        );
-        return template.find(query, DecisionDocument.class, COLLECTION)
-                .stream()
+        Query query =
+                Query.query(Criteria.where("assetId").is(assetId).and("riskLevel").is(riskLevel));
+        return template.find(query, DecisionDocument.class, COLLECTION).stream()
                 .map(mapper::toDTO)
                 .toList();
     }
 
     @Override
     public Optional<DecisionDTO> getOne(String assetId, int riskLevel) {
-        Query query = Query.query(
-                Criteria.where("assetId").is(assetId)
-                        .and("riskLevel").is(riskLevel)
-        );
+        Query query =
+                Query.query(Criteria.where("assetId").is(assetId).and("riskLevel").is(riskLevel));
         DecisionDocument doc = template.findOne(query, DecisionDocument.class, COLLECTION);
-        return Optional.ofNullable(doc)
-                .map(mapper::toDTO);
+        return Optional.ofNullable(doc).map(mapper::toDTO);
     }
 }
